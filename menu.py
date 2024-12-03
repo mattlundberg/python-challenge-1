@@ -1,6 +1,6 @@
-#main menu  
-mainMenu = [
-    {"Number": 1, "Item Name": "Hamberger", "Price": 3.99, "Type": "Meal"},
+# Menu data
+MENU_ITEMS = [
+    {"Number": 1, "Item Name": "Hamburger", "Price": 3.99, "Type": "Meal"},
     {"Number": 2, "Item Name": "Cheeseburger", "Price": 4.99, "Type": "Meal"}, 
     {"Number": 3, "Item Name": "Chicken Nuggets", "Price": 2.99, "Type": "Meal"},
     {"Number": 4, "Item Name": "Chicken Tenders", "Price": 3.99, "Type": "Meal"},
@@ -18,108 +18,94 @@ mainMenu = [
     {"Number": 16, "Item Name": "Pie", "Price": 0.50, "Type": "Dessert"}
 ]
 
-orderedItems = []
+class OrderSystem:
+    def __init__(self):
+        self.ordered_items = []
+        self.name_spacing = self._find_name_spacing()
+        self.price_spacing = self._find_price_spacing()
+        self.quantity_spacing = 5
 
+    def _find_name_spacing(self):
+        return max(len(item["Item Name"]) for item in MENU_ITEMS)
 
+    def _find_price_spacing(self):
+        return max(len(str(item["Price"])) for item in MENU_ITEMS)
 
-#print the menu
-def printMenu(menu):
-    for item in menu:
-        print(f"{item['Type']:<8} | {item['Number']:<2} | {item['Item Name']:<{nameSpacing}} | ${item['Price']:<{priceSpacing}.2f}")
+    def print_menu(self):
+        print("Menu")
+        for item in MENU_ITEMS:
+            print(f"{item['Type']:<8} | {item['Number']:<2} | {item['Item Name']:<{self.name_spacing}} | ${item['Price']:<{self.price_spacing}.2f}")
 
-#find the longest item name in the menu
-def findNameSpacing(list):
-    maxNameLength = 0
-    for item in list:
-        if len(item["Item Name"]) > maxNameLength:
-            maxNameLength = len(item["Item Name"])
-    return maxNameLength
+    def print_order(self):
+        print("You have ordered:")
+        column_info = f"{'Item Name':<{self.name_spacing}} | {'Price':<{self.price_spacing}} | {'Quantity':<{self.quantity_spacing}}"   
+        print(column_info)
+        print("-" * len(column_info))
+        for item in self.ordered_items:
+            print(f"{item['Item Name']:<{self.name_spacing}} | ${item['Price']:<{self.price_spacing}} | {item['Quantity']:<{self.quantity_spacing}}")
+        print("\n")
 
-#find the longest price in the menu
-def findPriceSpacing(list):
-    maxPriceLength = 0
-    for item in list:
-        if len(str(item["Price"])) > maxPriceLength:
-            maxPriceLength = len(str(item["Price"]))
-    return maxPriceLength
-
-#print the ordered items
-def printOrderedItems(orderedItems):
-    print("You have ordered:")
-    columnInformation = f"{'Item Name':<{nameSpacing}} | {'Price':<{priceSpacing}} | {'Quantity':<{quantitySpacing}}"   
-    print(columnInformation)
-    print("-" * len(columnInformation))
-    for item in orderedItems:
-            print(f"{item['Item Name']:<{nameSpacing}} | ${item['Price']:<{priceSpacing}} | {item['Quantity']:<{quantitySpacing}}")
-
-    print("\n")
-
-
-#set the spacing for the item name, price, and quantity
-nameSpacing = findNameSpacing(mainMenu)
-priceSpacing = findPriceSpacing(mainMenu)
-quantitySpacing = 5 #This is constant. The quantity is the last item on the list and will more than likely never need to be longer than 5 characters.
-
-#print the menu
-print("Menu")
-printMenu(mainMenu)
-
-#ask user to select an item from the menu
-isOrdering = True
-while isOrdering:
-    menu_selection = 0
-    quantity = 1
-
-    #get the menu selection from the user
-    while True:
-        menu_selection = input("Please select an item from the menu: ")
-        if menu_selection.isdigit():
-            menu_selection = int(menu_selection)
-            if menu_selection > len(mainMenu):
+    def get_menu_selection(self):
+        while True:
+            selection = input("Please select an item from the menu: ")
+            if selection.isdigit():
+                selection = int(selection)
+                if 1 <= selection <= len(MENU_ITEMS):
+                    return MENU_ITEMS[selection - 1]
                 print("Please enter a number for an item on the menu")
             else:
-                break
-        else:
+                print("Please enter a valid number")
+
+    def get_quantity(self):
+        while True:
+            quantity = input("Please enter the quantity: ")
+            if quantity == "":
+                return 1
+            if quantity.isdigit():
+                return int(quantity)
             print("Please enter a valid number")
 
-    #get the selected item from the menu
-    selectedItem = mainMenu[menu_selection - 1]
-
-#ask user to enter the quantity of the item
-    while True:
-        quantity = input("Please enter the quantity: ")
-        if quantity == "":
-            quantity = 1
-            break
-        if quantity.isdigit():
-            quantity = int(quantity)
-            break
-        print("Please enter a valid number")
-
-    #add the selected item to the orderedItems list
-    orderedItems.append({"Item Name": selectedItem["Item Name"], "Quantity": quantity, "Price": f"{selectedItem['Price']:.2f}"})
-    printOrderedItems(orderedItems)
-
-    #ask user if they would like to order another item
-    while True:
-        continueOrdering = input("Would you like to order another item? (y/n): ")
-        match continueOrdering.lower():
-            case "y":
-                printMenu(mainMenu)
+    def process_order(self):
+        self.print_menu()
+        
+        while True:
+            selected_item = self.get_menu_selection()
+            quantity = self.get_quantity()
+            
+            self.ordered_items.append({
+                "Item Name": selected_item["Item Name"],
+                "Quantity": quantity,
+                "Price": f"{selected_item['Price']:.2f}"
+            })
+            
+            self.print_order()
+            
+            if not self.continue_ordering():
                 break
-            case "n":   
-                isOrdering = False
-                break
-            case _:
-                print("Please enter a \'y\' or \'n\'")
-#end of ordering loop
 
-#calculate the total price of the order
-totalPrice = 0
-for item in orderedItems:
-    totalPrice += float(item["Price"]) * item["Quantity"]
+    def continue_ordering(self):
+        while True:
+            response = input("Would you like to order another item? (y/n): ").lower()
+            if response == 'y':
+                self.print_menu()
+                return True
+            if response == 'n':
+                return False
+            print("Please enter a 'y' or 'n'")
 
-#print receipt
-printOrderedItems(orderedItems)
-print(f"The total price of the order is ${totalPrice:.2f}")
-print("Thank you for your order!")
+    def calculate_total(self):
+        return sum(float(item["Price"]) * item["Quantity"] for item in self.ordered_items)
+
+    def print_receipt(self):
+        self.print_order()
+        total = self.calculate_total()
+        print(f"The total price of the order is ${total:.2f}")
+        print("Thank you for your order!")
+
+def main():
+    order_system = OrderSystem()
+    order_system.process_order()
+    order_system.print_receipt()
+
+if __name__ == "__main__":
+    main()
