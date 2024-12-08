@@ -187,7 +187,6 @@ while place_order:
 print("This is what we are preparing for you.\n")
 
 # Uncomment the following line to check the structure of the order
-#print(order)
 
 print("Item name                 | Price  | Quantity")
 print("--------------------------|--------|----------")
@@ -202,13 +201,13 @@ for item in order:
 
     # 8. Calculate the number of spaces for formatted printing
     num_item_spaces = 26 - len(item_name)
-    item_spaces = " " * num_item_spaces
+    num_price_spaces = 6 - len(str(item_price))
+    num_quantity_spaces = 11 - len(str(item_quantity))
 
     # 9. Create space strings
-    num_price_spaces = 6 - len(str(item_price))
+    item_spaces = " " * num_item_spaces
     price_spaces = " " * num_price_spaces
-    num_quantity_spaces = 11 - len(str(item_quantity))
-    quantity_spaces = " " * num_quantity_spaces 
+    quantity_spaces = " " * num_quantity_spaces
 
 
     # 10. Print the item name, price, and quantity
